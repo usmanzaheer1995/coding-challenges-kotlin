@@ -1,33 +1,47 @@
 package org.usmanzaheer1995.ccwc
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
+import java.io.BufferedReader
 import java.io.File
-import java.io.FileNotFoundException
+import java.io.FileReader
+
 
 fun main(args: Array<String>) {
     App().main(args)
 }
 
 class App : CliktCommand() {
-    val numOfBytes: String? by option("-c", help = "Number of bytes to read")
-    val numOfLines: String? by option("-l", help = "Number of lines to read")
-    val fileName: String by option("-f", help = "File to read from").required()
+    val numOfBytes by option("-c", "--numOfBytes", help = "Number of bytes to read").flag()
+    val numOfLines by option("-l", help = "Number of lines to read").flag()
+    val filename by argument()
 
     override fun run() {
-        process(fileName)
+        val file = File("src/main/kotlin/ccwc/$filename")
+        if (!file.exists()) {
+            println("File not found")
+            return
+        }
+
+        if (numOfBytes) {
+            println("Total bytes: ${readNumOfBytes(file)}")
+        }
+        
+        if (numOfLines) {
+            println("Total lines: ${readNumOfLines(file)}")
+        }
     }
 
-    private fun process(fileName: String) {
-        println("Processing file $fileName...")
-        var bytes = emptyArray<Byte>().toByteArray()
-        try {
-            val file = File("src/main/kotlin/ccwc/$fileName")
-            bytes = file.readBytes()
-        } catch (e: FileNotFoundException) {
-            println("File not found")
-        }
-        println("Total bytes: ${bytes.size}")
+    private fun readNumOfBytes(file: File): Int {
+        return file.readBytes().size
+    }
+    private fun readNumOfLines(file: File): Int {
+        val reader = BufferedReader(FileReader(file))
+        var lines = 0
+        while (reader.readLine() != null) lines++
+
+        return lines
     }
 }
